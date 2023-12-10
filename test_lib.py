@@ -275,8 +275,7 @@ class RandomPlayer(BasePokerPlayer):
     def declare_action(self, valid_actions, hole_card, round_state):
         raise_action_info = valid_actions[2]
         raise_action = raise_action_info["action"]
-        raise_amount = random.randint(
-            raise_action_info['amount']['min'], raise_action_info['amount']['max'])
+        raise_amount = raise_action_info['amount']['min']
         call_action_info = valid_actions[1]
         call_action, call_amount = call_action_info["action"], call_action_info["amount"]
         fold_action = valid_actions[0]["action"]
@@ -533,15 +532,39 @@ def updatePayoffs(game_result, name="GameTree"):
     pickle.dump(tree, open("refined_tree.pkl", "wb"))
             
 
+def eval_game_tree():
+    avg_stack = [0, 0]
+    iters = 100
+    for _ in range(0, iters):
+        config = setup_config(max_round=10, initial_stack=200,
+                              small_blind_amount=1)
+        config.register_player(name="GameTree", algorithm=refinedGTPlayer())
+        config.register_player(name="Random", algorithm=RandomPlayer())
+        game_result = start_poker(config, verbose=1)
+        for j in range(0, 2):
+            # AI BOT RANDOM
+            avg_stack[j] += game_result["players"][j]["stack"]
+    avg_stack = [x / iters for x in avg_stack]
+    if os.path.exists("eval_ai.pkl"):
+        avg_stack_df = pickle.load(open("eval_ai.pkl", "rb"))
+        new_df = pd.DataFrame(columns=["Custom Agent", "Random"])
+        new_df.loc[0] = avg_stack
+        avg_stack_df = pd.concat([avg_stack_df, new_df], ignore_index=True)
+    else:
+        avg_stack_df = pd.DataFrame(columns=["Custom Agent", "Random"])
+        avg_stack_df.loc[0] = avg_stack
+    pickle.dump(avg_stack_df, open("eval_ai.pkl", "wb"))
+    print(avg_stack_df)
+
 
 
 def gameTree():
-    config = setup_config(max_round=100, initial_stack=200,
+    config = setup_config(max_round=1, initial_stack=200,
                           small_blind_amount=10)
     config.register_player(name="GameTree", algorithm=refinedGTPlayer())
-    config.register_player(name="Random", algorithm=RandomPlayer())
+    config.register_player(name="Fish", algorithm=FishPlayer())
     pickle.dump(actions, open("actions.pkl", "wb"))
-    game_result = start_poker(config, verbose=1)
+    game_result = start_poker(config, verbose=0)
     # print(game_result)
     updatePayoffs(game_result)
     # updatePayoffs(game_result, name="GameTreeCopy")
@@ -557,4 +580,5 @@ if __name__ == "__main__":
     # config.register_player(name="Aggressive", algorithm=AggressiveNLHAgent())
     # game_result = start_poker(config, verbose=1)
     # eval()
-    gameTree()
+    for i in range(0, 10):
+        eval_game_tree()
