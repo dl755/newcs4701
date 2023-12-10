@@ -47,7 +47,7 @@ class Dealer:
     def play_round(self, round_count, blind_amount, ante, table):
         state, msgs = RoundManager.start_new_round(
             round_count, blind_amount, ante, table)
-        print("State is: ", state)
+        # print("State is: ", state) I COMMENTED THIS OUT
         while True:
             self.__message_check(msgs, state["street"])
             if state["street"] != Const.Street.FINISHED:  # continue the round
@@ -230,7 +230,8 @@ class MessageSummarizer(object):
         self.verbose = verbose
 
     def print_message(self, message):
-        print(message)
+        pass
+        # print(message) COMMENTED THIS OUT
 
     def summarize_messages(self, raw_messages):
         if self.verbose == 0:

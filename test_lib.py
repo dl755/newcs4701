@@ -536,11 +536,15 @@ def eval_game_tree():
     avg_stack = [0, 0]
     iters = 100
     for _ in range(0, iters):
-        config = setup_config(max_round=10, initial_stack=200,
+        config = setup_config(max_round=1, initial_stack=200,
                               small_blind_amount=1)
         config.register_player(name="GameTree", algorithm=refinedGTPlayer())
         config.register_player(name="Random", algorithm=RandomPlayer())
         game_result = start_poker(config, verbose=1)
+        pickle.dump(actions, open("actions.pkl", "wb"))
+        game_result = start_poker(config, verbose=0)
+        # print(game_result)
+        updatePayoffs(game_result)
         for j in range(0, 2):
             # AI BOT RANDOM
             avg_stack[j] += game_result["players"][j]["stack"]
@@ -580,5 +584,5 @@ if __name__ == "__main__":
     # config.register_player(name="Aggressive", algorithm=AggressiveNLHAgent())
     # game_result = start_poker(config, verbose=1)
     # eval()
-    for i in range(0, 10):
+    for _ in range(0,100):
         eval_game_tree()
